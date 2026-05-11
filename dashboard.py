@@ -302,9 +302,23 @@ elif menu == "Explorador de Transações":
 
 elif menu == "Detecção de Anomalias":
     st.title("🚨 Detecção de Anomalias")
-    st.markdown("As transações abaixo foram marcadas pelo sistema com base em regras de segurança.")
     
-    anomalies = get_anomalies()
+    # Toggle para IA
+    modo_deteccao = st.radio(
+        "Método de Detecção",
+        ["Regras de Negócio (Padrão)", "Inteligência Artificial (Experimental)"],
+        horizontal=True,
+        help="Regras: Baseado em limites fixos. IA: Baseado em aprendizado de máquina (Isolation Forest)."
+    )
+    
+    if modo_deteccao == "Regras de Negócio (Padrão)":
+        st.markdown("As transações abaixo foram marcadas com base em regras de segurança pré-definidas.")
+        anomalies = get_anomalies()
+    else:
+        st.markdown("As transações abaixo foram identificadas como 'outliers' por um modelo de **Machine Learning**.")
+        anomalies = get_anomalies_ia()
+        if not anomalies:
+            st.info("O modelo de IA precisa de pelo menos 10 transações no banco para realizar a análise.")
 
    
     # Calcula o limiar global para exibir o badge de valor anômalo

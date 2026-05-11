@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from .models import Transacao, TransacaoAnomalia
-from .services import analisar_anomalias, criar_nova_transacao
+from .services import analisar_anomalias, analisar_anomalias_ia, criar_nova_transacao
 from .repositories import TransacaoRepository # Para buscas simples
 
 router = APIRouter()
@@ -25,6 +25,10 @@ def listar_transacoes(
 @router.get("/anomalies", response_model=list[TransacaoAnomalia])
 def detectar_anomalias():
     return analisar_anomalias()
+
+@router.get("/anomalies/ai", response_model=list[TransacaoAnomalia])
+def detectar_anomalias_ia():
+    return analisar_anomalias_ia()
 
 @router.post("/transactions")
 def criar_transacao(t: Transacao):

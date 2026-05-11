@@ -4,3 +4,4 @@ pandas
 pydantic
 streamlit
 requests
+scikit-learn
