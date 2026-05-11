@@ -9,6 +9,7 @@ Sistema de gerenciamento de transações financeiras com detecção de anomalias
 - **SQLite**: Banco de dados relacional leve.
 - **Pydantic**: Validação de dados.
 - **Uvicorn**: Servidor ASGI para rodar a API.
+- **IA - Isolation Forest**: IA para detectar transações suspeitas.
 
 ## 📂 Estrutura do Projeto
 - `app/`: Contém a lógica da API (rotas, modelos, serviços).
