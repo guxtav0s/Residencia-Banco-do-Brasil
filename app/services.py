@@ -63,39 +63,54 @@ def analisar_anomalias_ia():
 
     # Busca todas as transações para treinar o modelo
     linhas = TransacaoRepository.buscar_recentes_para_analise(limite=2000)
-    if len(linhas) < 10: # Precisa de um mínimo de dados para treinar
+    if not linhas or len(linhas) < 10: 
         return []
 
-    df = pd.DataFrame([dict(l) for l in linhas])
-    
-    # Preparação de Features para a IA
-    # 1. Converte hora (HH:MM) para valor numérico (0 a 23.9)
-    df['hora_num'] = df['hora'].apply(lambda x: int(x.split(':')[0]) + int(x.split(':')[1])/60)
-    
-    # Seleciona features numéricas para o modelo
-    features = ['valor', 'hora_num', 'tentativas']
-    X = df[features]
-    
-    # Inicializa e treina o Isolation Forest
-    # contamination=0.05 significa que esperamos ~5% de anomalias
-    model = IsolationForest(contamination=0.05, random_state=42)
-    df['anomaly_score'] = model.fit_predict(X)
-    
-    # No Isolation Forest, -1 indica anomalia
-    anomalias_ia = df[df['anomaly_score'] == -1].copy()
-    
-    # Formata para retorno
-    resultados = []
-    for _, row in anomalias_ia.iterrows():
-        t = row.to_dict()
-        t['motivo_suspeita'] = "Detectado por Inteligência Artificial (Outlier Estatístico)"
-        t['nivel_risco'] = "Médio" if t['valor'] < 5000 else "Alto"
-        # Limpeza de campos temporários
-        if 'hora_num' in t: del t['hora_num']
-        if 'anomaly_score' in t: del t['anomaly_score']
-        resultados.append(t)
+    try:
+        df = pd.DataFrame([dict(l) for l in linhas])
         
-    return resultados
+        # Preparação de Features para a IA
+        # Converte hora (HH:MM) para valor numérico (0 a 23.9)
+        df['hora_num'] = df['hora'].apply(lambda x: int(x.split(':')[0]) + int(x.split(':')[1])/60 if isinstance(x, str) and ':' in x else 12.0)
+        
+        # Seleciona features numéricas para o modelo
+        features = ['valor', 'hora_num', 'tentativas']
+        
+        # Garante que não há valores nulos
+        X = df[features].fillna(0)
+        
+        if X.empty:
+            return []
+
+        # Inicializa e treina o Isolation Forest
+        # contamination=0.03 (reduzido para ser mais seletivo que a regra estatística básica)
+        model = IsolationForest(contamination=0.03, random_state=42)
+        df['anomaly_score'] = model.fit_predict(X)
+        
+        # No Isolation Forest, -1 indica anomalia
+        anomalias_ia = df[df['anomaly_score'] == -1].copy()
+        
+        # Formata para retorno
+        resultados = []
+        for _, row in anomalias_ia.iterrows():
+            t = row.to_dict()
+            t['motivo_suspeita'] = "🤖 Inteligência Artificial: Comportamento Atípico (Outlier)"
+            t['nivel_risco'] = "Médio" if t['valor'] < 5000 else "Alto"
+            
+            # Remove campos auxiliares da IA antes de enviar para a API/Frontend
+            for extra in ['hora_num', 'anomaly_score']:
+                if extra in t: del t[extra]
+            
+            # Garante que campos obrigatórios de anomalia existam
+            if 'media_conta' not in t:
+                t['media_conta'] = 0.0
+                
+            resultados.append(t)
+            
+        return resultados
+    except Exception as e:
+        print(f"Erro no processamento de IA: {e}")
+        return []
 
 def criar_nova_transacao(transacao_data):
     return TransacaoRepository.salvar(transacao_data)
