@@ -29,6 +29,15 @@ def get_anomalies():
     except Exception:
         return None
 
+def get_anomalies_ia():
+    try:
+        response = requests.get(f"{API_URL}/anomalies/ai")
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except Exception:
+        return None
+
 def create_transaction(data):
     try:
         response = requests.post(f"{API_URL}/transactions", json=data)
