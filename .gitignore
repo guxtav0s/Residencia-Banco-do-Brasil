@@ -5,6 +5,5 @@ __pycache__/
 venv/
 ENV/
 .env
-data/banco.db
-data/transacoes.json
+
 .openclaude-profile.json
