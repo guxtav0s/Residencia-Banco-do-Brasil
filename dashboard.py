@@ -398,7 +398,7 @@ elif menu == "Testes de Validação":
             sensibilidade = st.sidebar.slider(
                 "Ajustar Sensibilidade (Teste)", 
                 1.0, 5.0, 2.5, 0.5,
-                help="O padrão do sistema é 2.5"
+                help="O padrão do sistema é 2.5. Menor = mais sensível."
             )
             
             limiar = mediana + (sensibilidade * desvio)
@@ -413,11 +413,11 @@ elif menu == "Testes de Validação":
             
             # Simulador
             st.subheader("🛠️ Simulador de Transação")
-            test_val = st.number_input("Insira um valor para validar (R$):", min_value=0.0, value=mediana * 1.5, step=100.0)
+            test_val = st.number_input("Insira um valor para validar (R$):", min_value=0.0, value=float(round(mediana * 1.5, 2)), step=100.0)
             
             if test_val > limiar:
                 st.error(f"🚨 **ALERTA!** O valor R$ {test_val:,.2f} está **ACIMA** do limiar de R$ {limiar:,.2f}.")
-                st.markdown(f"Este valor é **{test_val/mediana:.1f}x** maior que a mediana.")
+                st.markdown(f"Este valor é **{test_val/mediana:.1f}x** maior que a mediana do sistema.")
             else:
                 st.success(f"✅ **DENTRO DO PADRÃO.** O valor R$ {test_val:,.2f} está abaixo do limiar de R$ {limiar:,.2f}.")
             
@@ -425,15 +425,15 @@ elif menu == "Testes de Validação":
             st.markdown("---")
             st.subheader("📊 Distribuição de Valores")
             
-            # Criando um gráfico simples de barras/histograma para visualizar onde o valor de teste cai
-            hist_data = df_all['valor'].value_counts().sort_index()
-            st.bar_chart(df_all['valor'], use_container_width=True)
-            st.info(f"O limiar de corte atual é R$ {limiar:,.2f}. Qualquer valor à direita deste ponto no gráfico acima gera um alerta.")
+            # Gráfico de linha para mostrar a distribuição
+            chart_data = df_all.sort_values('valor')[['valor']].reset_index(drop=True)
+            st.line_chart(chart_data)
+            st.info(f"O limiar de corte para novos alertas é de **R$ {limiar:,.2f}**. No gráfico de linha acima, transações que geram picos acima deste valor são consideradas atípicas.")
 
         else:
             st.warning("Dados insuficientes no banco para calcular estatísticas (mínimo 2 transações).")
     else:
-        st.info("Nenhuma transação encontrada no banco de dados.")
+        st.info("Nenhuma transação encontrada no banco de dados para realizar os testes.")
 
 # Footer
 st.sidebar.markdown("---")

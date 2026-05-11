@@ -40,8 +40,14 @@ class TransacaoRepository:
     def salvar(t):
         conexao = conectar_banco()
         cursor = conexao.cursor()
+        
+        # Usando nomes de colunas explícitos para evitar erros de ordem
         cursor.execute("""
-            INSERT INTO transacoes VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO transacoes (
+                id, valor, data, hora, dia_semana, categoria, conta, 
+                cidade, estado, pais, latitude, longitude, tipo_transacao, 
+                dispositivo, estabelecimento, tentativas, ip_origem, is_fraude
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (t.id, t.valor, t.data, t.hora, t.dia_semana, t.categoria, t.conta, 
               t.cidade, t.estado, t.pais, t.latitude, t.longitude, t.tipo_transacao, 
               t.dispositivo, t.estabelecimento, t.tentativas, t.ip_origem, t.is_fraude))
