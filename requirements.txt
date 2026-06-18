@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+pydantic
+streamlit
+requests
+scikit-learn
+httpx
+python-dotenv
